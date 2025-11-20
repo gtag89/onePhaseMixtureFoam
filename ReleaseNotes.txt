@@ -1,0 +1,17 @@
+###########################################################################
+*** V1.0 (2025-11-20)
+*** 1st release of the onePhaseMixtureFoam package
+###########################################################################
+
+### Solvers
+
+- onePhaseMixture
+
+  - single-phase flow solver for hyperbolic momentum in porous media
+
+
+### Tutorials
+
+- 1D saturation overshoot 
+
+- 2D gravity fingers 
