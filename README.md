@@ -49,7 +49,7 @@ Tutorials
 
 Each tutorial directory contains:
 - Complete OpenFOAM case setup (0/, constant/, system/)
-- README with case description 
+- ./run script with case description 
 
 For users
 ---------
