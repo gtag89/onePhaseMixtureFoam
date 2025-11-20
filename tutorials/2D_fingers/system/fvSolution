@@ -1,0 +1,115 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2206                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    "(Sw|divU)"
+    {
+        //solver           GAMG;
+        //tolerance        1e-8;
+        //relTol           0.01;
+        //smoother         DICGaussSeidel;
+
+        solver             PBiCGStab;
+        preconditioner     DIC;
+        tolerance          1.0e-8;
+        relTol             0.01;
+        minIter            1;
+
+    }
+
+    "(Sw|divU)Final"
+    {
+        $Sw;
+        relTol             0.0;
+        //minIter            10;
+
+    }
+    "(U|rho)"
+    {        
+        solver             PBiCGStab;
+        preconditioner     DILU;
+        tolerance          1.0e-8;
+        relTol             0.01;
+        //minIter            1;
+        
+        //solver          smoothSolver;
+        //smoother        symGaussSeidel;
+        //tolerance          1.0e-8;
+        //relTol             0.01;
+	//maxIter         10000;
+    }
+    "(U|rho)Final"
+    {
+        $U;
+        relTol          0;
+    }
+
+}
+
+PIMPLE
+{
+    momentumPredictor no; //yes;
+    nOuterCorrectors  10;
+    nCorrectors       4;
+    nNonOrthogonalCorrectors 0;
+    //simpleRho       true;
+    
+    //rhoMin	      1e-6;
+    //rhoMax	      1000;
+    //pMinFactor      0.8;
+    //pMaxFactor      1.0;
+    //pRefCell        0;
+    //pRefValue       0;
+    
+    residualControl
+    {
+        U
+        {
+                tolerance  1e-6;
+                relTol      0;
+        }
+        Sw
+        {
+                tolerance  1e-6;
+                relTol      0;
+        }
+    }
+}
+
+relaxationFactors
+{
+    fields
+    {
+        Sw		 0.5;
+        U               0.7;
+    }
+    equations
+    {
+        Sw              0.7;
+        U               0.9;
+    }
+}
+/*relaxationFactors
+{
+    equations
+    {
+        ".*" 0.9;
+    }
+}*/
+
+
+// ************************************************************************* //

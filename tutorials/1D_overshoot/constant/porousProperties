@@ -1,0 +1,42 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.3.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      porousProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+porousModel 		vanGenuchten;
+
+coefficients
+{
+	// Van Genuchten coefficients
+	SeMin                 1.0e-4;
+	Smax                  0.84;
+	Sr                    0.01; //0.046; 
+	poreSize              0.001;
+	nIm                   6.23; // 2.58; 
+	lIm                   0.5;
+	pc0Im                 555.56; // 116.28; //1/alpha 
+	nDr                   10.57; //13.84; 
+	lDr                   0.2;
+	pc0Dr                 984.90; //1250;
+}
+
+limiters
+{
+	dpcdSwMax	      -1e-6;
+	dpcdSwMin	      -1e+6;
+	KrSmall	       1e-6;	
+}
+
+// ************************************************************************* //

@@ -1,0 +1,58 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2206                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    arch        "LSB;label=64;scalar=64";
+    class       volScalarField;
+    location    "0";
+    object      Sw;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform  0.01;
+
+boundaryField
+{
+    frontAndBack
+    {
+        type            empty;
+    }
+    rightAndLeft
+    {
+        type            empty;
+    }
+    
+    top
+    {
+        //type            zeroGradient; 
+        type		 fixedValue; 
+        value           uniform 0.426;
+        //type            mixed;
+        //refValue        uniform 1.0;      // Target saturation
+        //refGradient     uniform 0.0;        // Zero gradient
+        //valueFraction   uniform 0.5;              // Blend: 80% value, 20% gradient
+
+    }
+    
+    bottom
+    {
+        //type            zeroGradient;
+        type            fixedValue;
+        value           $internalField;
+        //type            inletOutlet;
+        //inletValue      $internalField;  // Residual if flow reverses
+        //value           uniform 0.0;
+        //phi             phi;
+    }
+}
+
+// ************************************************************************* //
