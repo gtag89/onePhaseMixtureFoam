@@ -1,5 +1,15 @@
 #!/bin/sh
 
+#----------------------------------------------------------------------------------------
+# 2D Gravity Fingering in Heterogeneous Porous Media
+#
+# This case simulates 2D gravity-driven fingering instabilities during infiltration
+# into heterogeneous, dry porous media with randomly initialized permeability field. 
+# The simulation shows finger formation, growth, and lateral competition driven by the 
+# interplay between second viscosity effects and permeability heterogeneity.
+#
+#----------------------------------------------------------------------------------------
+
 # Source tutorial run functions
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
