@@ -1,5 +1,14 @@
 #!/bin/sh
 
+#------------------------------------------------------------------------------------
+# 1D Infiltration with Saturation Overshoot
+# 
+# This case demonstrates the formation of saturation overshoot during 1D vertical
+# infiltration into an initially dry porous medium. The simulation reproduces
+# experimental conditions from DiCarlo (2004) showing non-monotonic saturation
+# profiles.
+#------------------------------------------------------------------------------------
+
 # Source tutorial run functions
 . $WM_PROJECT_DIR/bin/tools/RunFunctions
 
