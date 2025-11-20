@@ -40,7 +40,12 @@ which onePhaseMixtureFoam
 Tutorials
 ---------
 * **1D_overshoot**: Demonstrates saturation overshoot formation during vertical infiltration, validated against DiCarlo (2004) experiments
+
+![Fig_09](https://github.com/user-attachments/assets/4a18bde5-3c2f-42ca-b6df-88d8093c9f04)
+
 * **2D_fingers**: Shows gravity fingering instabilities in heterogeneous porous media with random permeability distribution
+
+  ![Fig_10](https://github.com/user-attachments/assets/c89b8a57-5452-47ee-a613-234b76083acd)
 
 Each tutorial directory contains:
 - Complete OpenFOAM case setup (0/, constant/, system/)
