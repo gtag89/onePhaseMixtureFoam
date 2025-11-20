@@ -1,9 +1,5 @@
 # onePhaseMixtureFoam
 
-**********************************************************************
-**** onePhaseMixtureFoam: Hyperbolic solver for unsaturated flow ****
-**********************************************************************
-
 About onePhaseMixtureFoam
 -------------------------
 
