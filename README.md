@@ -54,7 +54,7 @@ For users
 ---------
 Please note that this solver is developed by a small research team. The onePhaseMixtureFoam solver is distributed, similarly to OpenFOAM itself, in the hope that it will be useful but without any warranty. We welcome feedback and bug reports through GitHub Issues.
 
-For questions about specific applications or solver capabilities, please use GitHub Discussions. If you need to contact the authors directly regarding onePhaseMixtureFoam, please email: giorgia.tagliavini@empa.ch
+For questions about specific applications or solver capabilities, please use GitHub Discussions. If you need to contact the authors directly regarding onePhaseMixtureFoam, please email: giorgia.tagliavini89@gmail.com .
 
 Cite this work as
 -----------------
