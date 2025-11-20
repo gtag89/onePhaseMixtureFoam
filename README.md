@@ -3,11 +3,11 @@
 About onePhaseMixtureFoam
 -------------------------
 
-onePhaseMixtureFoam is a free, open-source CFD solver based on OpenFOAM capable of simulating multiphase flow instabilities in unsaturated porous media. The solver employs a hyperbolic momentum formulation derived from mixture theory to capture non-equilibrium phenomena such as saturation overshoot and gravity fingering that cannot be reproduced by conventional Richards equation-based approaches.
+onePhaseMixtureFoam is a free, open-source CFD solver based on OpenFOAM capable of simulating multiphase flow instabilities in unsaturated porous media. 
+The solver employs a hyperbolic momentum formulation derived from mixture theory to capture non-equilibrium phenomena such as saturation overshoot and gravity fingering that cannot be reproduced by conventional Richards equation-based approaches.
+The implementation is based on mixture theory with a simplified single-phase formulation that neglects the density and viscosity of air and assumes the solid rigid with constant porosity. A second viscosity term transforms the momentum equation from parabolic to hyperbolic, allowing the formation of a finite-speed traveling wave and non-equilibrium front dynamics. 
 
-The code is developed by Dr. Giorgia Tagliavini (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
-
-The implementation is based on mixture theory with a simplified single-phase formulation that neglects the density and viscosity of air and assumes the solid rigid with constant porosity. A second viscosity term transforms the momentum equation from parabolic to hyperbolic, allowing the formation of a finite-speed traveling wave and non-equilibrium front dynamics. The mathematical formulation was conceptualized by Dr. Ivan Lunati (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
+The code is developed by Dr. Giorgia Tagliavini (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland). The mathematical formulation was conceptualized by Dr. Ivan Lunati (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
 
 Code capabilities
 -----------------
