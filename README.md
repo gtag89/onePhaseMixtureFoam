@@ -7,7 +7,7 @@ onePhaseMixtureFoam is a free, open-source CFD solver based on OpenFOAM capable 
 
 The code is developed by Dr. Giorgia Tagliavini (https://github.com/gtagliavini - Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
 
-The implementation is based on mixture theory with a simplified single-phase formulation that neglects the density and viscosity of air. A second viscosity term transforms the momentum equation from parabolic to hyperbolic, enabling finite-speed traveling waves and non-equilibrium front dynamics. The mathematical formulation originates from an idea of Dr. Ivan Lunati (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
+The implementation is based on mixture theory with a simplified single-phase formulation that neglects the density and viscosity of air. A second viscosity term transforms the momentum equation from parabolic to hyperbolic, enabling finite-speed traveling waves and non-equilibrium front dynamics. The mathematical formulation was conceptualized by Dr. Ivan Lunati (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
 
 Code capabilities
 -----------------
