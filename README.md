@@ -7,12 +7,12 @@ onePhaseMixtureFoam is a free, open-source CFD solver based on OpenFOAM capable 
 
 The code is developed by Dr. Giorgia Tagliavini (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
 
-The implementation is based on mixture theory with a simplified single-phase formulation that neglects the density and viscosity of air. A second viscosity term transforms the momentum equation from parabolic to hyperbolic, enabling finite-speed traveling waves and non-equilibrium front dynamics. The mathematical formulation was conceptualized by Dr. Ivan Lunati (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
+The implementation is based on mixture theory with a simplified single-phase formulation that neglects the density and viscosity of air and assumes the solid rigid with constant porosity. A second viscosity term transforms the momentum equation from parabolic to hyperbolic, allowing the formation of a finite-speed traveling wave and non-equilibrium front dynamics. The mathematical formulation was conceptualized by Dr. Ivan Lunati (Laboratory for Computational Engineering, Empa, Swiss Federal Laboratories for Materials Science and Technology, Dübendorf, Switzerland).
 
 Code capabilities
 -----------------
 * Modified PIMPLE algorithm for saturation-velocity coupling instead of traditional pressure-velocity coupling
-* Van Genuchten-Mualem capillary pressure relationships with hysteresis framework
+* Van Genuchten-Mualem for capillary pressure and relative permeability
 * Second viscosity implementation with semi-implicit correction for numerical robustness  
 * Captures saturation overshoot across five orders of magnitude in infiltration rates
 * Reproduces gravity fingering instabilities in 2D and 3D heterogeneous media
@@ -39,23 +39,17 @@ which onePhaseMixtureFoam
 
 Tutorials
 ---------
-* **1D_overshoot**: Demonstrates saturation overshoot formation during vertical infiltration, validated against DiCarlo (2004) experiments
+* **1D_overshoot**: Demonstrates saturation overshoot formation during vertical infiltration, reproducing DiCarlo (2004) experiments
 
 ![Fig_09](https://github.com/user-attachments/assets/4a18bde5-3c2f-42ca-b6df-88d8093c9f04)
 
-* **2D_fingers**: Shows gravity fingering instabilities in heterogeneous porous media with random permeability distribution
+* **2D_fingers**: Shows gravity fingering instabilities in heterogeneous porous media with randomly initialized permeability field
 
   ![Fig_10](https://github.com/user-attachments/assets/c89b8a57-5452-47ee-a613-234b76083acd)
 
 Each tutorial directory contains:
 - Complete OpenFOAM case setup (0/, constant/, system/)
 - ./run script with case description 
-
-For users
----------
-Please note that this solver is developed by a small research team. The onePhaseMixtureFoam solver is distributed, similarly to OpenFOAM itself, in the hope that it will be useful but without any warranty. We welcome feedback and bug reports through GitHub Issues.
-
-For questions about specific applications or solver capabilities, please use GitHub Discussions. If you need to contact the authors directly regarding onePhaseMixtureFoam, please email: giorgia.tagliavini89@gmail.com .
 
 Cite this work as
 -----------------
