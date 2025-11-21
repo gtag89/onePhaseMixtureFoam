@@ -20,7 +20,7 @@ Code capabilities
 
 Compatibility
 -------------
-The code is prepared for compilation with OpenFOAM v2212 and later versions (https://openfoam.org)
+The code is prepared for compilation with OpenFOAM v2212 or later versions (https://www.openfoam.com/news/main-news/openfoam-v2212)
 
 Compilation
 -----------
