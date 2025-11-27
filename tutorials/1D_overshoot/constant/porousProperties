@@ -21,9 +21,8 @@ coefficients
 {
 	// Van Genuchten coefficients
 	SeMin                 1.0e-4;
-	Smax                  0.84;
+	Smax                  1.0;
 	Sr                    0.046; 
-	poreSize              0.001;
 	nIm                   6.23; // 2.58; 
 	lIm                   0.5;
 	pc0Im                 555.56; // 116.28; //1/alpha 
