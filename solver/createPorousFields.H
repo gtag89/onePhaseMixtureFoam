@@ -59,13 +59,16 @@ volScalarField eps
 // =============================================================================
 word porousModel(porousProperties.lookupOrDefault<word>("porousModel", "none"));
 
-if (porousModel != "vanGenuchten" && porousModel != "none")
+if (porousModel != "vanGenuchten" && porousModel != "brooksCorey" 
+    && porousModel != "none")
 {
     FatalErrorInFunction
         << "Unknown porous model: " << porousModel << nl
-        << "Valid options are: vanGenuchten, none" << nl
+        << "Valid options are: vanGenuchten, brooksCorey, none" << nl
         << exit(FatalError);
 }
+
+Info<< "Selected porous model: " << porousModel << nl << endl;
 
 // Handle case when no porous model is specified
 if (porousModel == "none")
@@ -174,9 +177,28 @@ volScalarField pc0Dr
     )
 );
 
-// Computed van Genuchten m parameters
-dimensionedScalar mIm = 1.0 - 1.0/nIm;
-dimensionedScalar mDr = 1.0 - 1.0/nDr;
+dimensionedScalar mIm = 0.0; 
+dimensionedScalar mDr = 0.0; 
+
+// Computing m parameter according to selected model
+if (porousModel == "vanGenuchten")
+{
+    Info<< "Defining m for van Genuchten model" << nl << endl;
+    
+    mIm = 1.0 - 1.0/nIm;
+    mDr = 1.0 - 1.0/nDr;
+}
+else if (porousModel == "brooksCorey")
+{
+    Info<< "Defining m for Brooks-Corey model" << nl << endl;
+    
+    mIm = (2.0 + 3.0*nIm)/nIm;
+    mDr = (2.0 + 3.0*nDr)/nDr;
+}
+else // porousModel == "none"
+{
+    Info<< "No porous model - no m defined" << nl << endl;
+}
 
 // =============================================================================
 // NUMERICAL LIMITERS
@@ -215,16 +237,10 @@ dimensionedScalar KrSmall
 scalar Regime = 1.0;
 
 // Interpolated parameters based on current regime
-dimensionedScalar m = Regime * mIm.value() + (1.0 - Regime) * mDr.value();
 dimensionedScalar n = Regime * nIm.value() + (1.0 - Regime) * nDr.value();
+dimensionedScalar m = Regime * mIm.value() + (1.0 - Regime) * mDr.value();
 dimensionedScalar l = Regime * lIm.value() + (1.0 - Regime) * lDr.value();
 volScalarField pc0 = Regime * pc0Im + (1.0 - Regime) * pc0Dr;
-
-// =============================================================================
-// VAN GENUCHTEN MODEL INITIALIZATION
-// =============================================================================
-Info<< "Initializing van Genuchten model\n" << endl;
-vanGenuchten vg(m, n, l, pc0);
 
 // =============================================================================
 // DERIVED SATURATION FIELDS
@@ -267,9 +283,6 @@ volScalarField Kr
     dimensionedScalar("Kr", dimensionSet(0, 0, 0, 0, 0, 0, 0), 0.0)
 );
 
-// Compute relative permeability using van Genuchten model
-Kr = vg.computeKr(Se) + KrSmall;
-
 // =============================================================================
 // CAPILLARY PRESSURE
 // =============================================================================
@@ -287,9 +300,6 @@ volScalarField pc
     mesh,
     dimensionedScalar("pc", dimensionSet(1, -1, -2, 0, 0, 0, 0), 0.0)
 );
-
-// Compute capillary pressure using van Genuchten model
-pc = vg.computePc(Se); 
 
 // =============================================================================
 // CAPILLARY PRESSURE DERIVATIVES
@@ -309,14 +319,36 @@ volScalarField dpcdSw
     dimensionedScalar("dpcdSw", dimensionSet(1, -1, -2, 0, 0, 0, 0), 0.0)
 );
 
-// Compute derivative of capillary pressure with respect to saturation
-dpcdSw = vg.computedPcdSw(Se, Sr);
+if (porousModel == "vanGenuchten")
+{
+    Info<< "Initializing van Genuchten model" << nl << endl;
+
+    vanGenuchten vg(m, n, l, pc0);
+    
+    Kr = vg.computeKr(Se) + KrSmall;
+    pc = vg.computePc(Se);
+    dpcdSw = vg.computedPcdSw(Se, Sr);
+}
+else if (porousModel == "brooksCorey")
+{
+    Info<< "Initializing Brooks-Corey model" << nl << endl;
+
+    brooksCorey bc(n, m, pc0);
+    
+    Kr = bc.computeKr(Se) + KrSmall;
+    pc = bc.computePc(Se);
+    dpcdSw = bc.computedPcdSw(Se, Sr);
+}
+else // porousModel == "none"
+{
+    Info<< "No porous model - using default values" << nl << endl;
+}
 
 // Apply numerical limiters
 dpcdSw = max(min(dpcdSw, dpcdSwMax), dpcdSwMin);
 
 // Interpolated derivative at faces
-surfaceScalarField dpcdSwf("dpcdSwf", fvc::interpolate(dpcdSw));  
+surfaceScalarField dpcdSwf("dpcdSwf", fvc::interpolate(dpcdSw)); 
 
 // =============================================================================
 // DARCY DRAG COEFFICIENT

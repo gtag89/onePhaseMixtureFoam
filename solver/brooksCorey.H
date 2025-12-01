@@ -6,44 +6,39 @@
      \\/     M anipulation  |
 \*---------------------------------------------------------------------------*/
 
-#ifndef vanGenuchten_H
-#define vanGenuchten_H
+#ifndef brooksCorey_H
+#define brooksCorey_H
 
 #include "volFields.H"
 #include "dimensionedScalar.H"
 
 /*---------------------------------------------------------------------------*\
-                       Class vanGenuchten Declaration
+                       Class brooksCorey Declaration
 \*---------------------------------------------------------------------------*/
 
 /*
 Description
-    Van Genuchten model for unsaturated porous media relationships.
-    
-    Implements the classic van Genuchten (1980) model for:
-    - Soil water retention curve (capillary pressure vs saturation)
-    - Relative permeability as function of effective saturation
-    - Derivative relationships for numerical solvers
+    Brooks-Corey model for unsaturated porous media relationships.
     
     Model equations:
-    - Capillary pressure: pc = pc0 * [(Se^(-1/m) - 1)^(1/n)]
-    - Relative permeability: Kr = Se^l * [1 - (1 - Se^(1/m))^m]^2
-    - Derivative: dpc/dSw = -(pc0/(m*n)) * (1/(1-Sr)) * [(Se^(-1/m)-1)^(1/n-1)] * Se^(-1/m-1)
+    - Capillary pressure: pc = pc0 * Se^(-1/n)
+    - Derivative: dpc/dSw = -pc0 / (n * (1 - Sr)) * Se^(-1/n - 1)
+    - Relative permeability: Kr = Se^m
+      where m = (2 + 3*n)/n for Burdine's theory
     
     where:
-    - Se = effective saturation = (Sw - Sr)/(Smax - Sr)
-    - m, n = van Genuchten shape parameters (m = 1 - 1/n typically)
-    - l = pore connectivity parameter (typically 0.5)
-    - pc0 = air-entry pressure
+    - Se = effective saturation = (Sw - Sr)/(1 - Sr)
+    - n = pore size distribution index (typically 0.2 - 5.0)
+    - pc0 = displacement (air-entry) pressure [Pa]
     - Sr = residual saturation
+    - Smax = maximum saturation
 
 References:
-    van Genuchten, M.Th. (1980). A closed-form equation for predicting the 
-    hydraulic conductivity of unsaturated soils. Soil Science Society of 
-    America Journal, 44(5), 892-898.
+    Brooks, R.H. and Corey, A.T. (1964). Hydraulic properties of porous media.
+    Hydrology Papers, Colorado State University, Fort Collins, Colorado.
 */
 
-class vanGenuchten
+class brooksCorey
 {
 private:
     
@@ -51,24 +46,14 @@ private:
     // PRIVATE DATA MEMBERS
     // ==========================================================================
     
-    //- Van Genuchten shape parameter m [-]
-    //  Controls the steepness of the retention curve
-    //  Typical range: 0.1 - 0.9
-    dimensionedScalar m_;
     
-    //- Van Genuchten shape parameter n [-]
-    //  Related to pore size distribution
-    //  Constraint: n > 1, typically n = 1/(1-m)
+    //- Pore size distribution index lambda [-]
     dimensionedScalar n_;
     
-    //- Pore connectivity parameter l [-]
-    //  Controls relative permeability curve shape
-    //  Typical value: 0.5 (Mualem assumption)
-    dimensionedScalar l_;
+    //- Relative permeability exponent eta [-]
+    dimensionedScalar m_;
     
-    //- Air-entry pressure field pc0 [Pa]
-    //  Pressure required to desaturate largest pores
-    //  Can be spatially variable for heterogeneous media
+    //- Displacement (air-entry) pressure field pd [Pa]
     volScalarField pc0_;
 
 public:
@@ -77,17 +62,15 @@ public:
     // CONSTRUCTORS
     // ==========================================================================
 
-    vanGenuchten
+    brooksCorey
     (
-        const dimensionedScalar m,
-        const dimensionedScalar n, 
-        const dimensionedScalar l,
+        const dimensionedScalar n,
+        const dimensionedScalar m, 
         const volScalarField& pc0
     )
     :
-        m_(m), 
         n_(n), 
-        l_(l), 
+        m_(m), 
         pc0_(pc0)
     {}
     
@@ -100,7 +83,7 @@ public:
     //  Units: [Pa]
     volScalarField computePc(const volScalarField& Se) const
     {
-        return pc0_ * pow(pow(Se, -1.0/m_) - 1.0, 1.0/n_);
+        return pc0_ * pow(Se, -1.0/n_);
     }
     
     //- Compute derivative of capillary pressure with respect to water saturation
@@ -108,8 +91,7 @@ public:
     //  Units: [Pa] (since dSw is dimensionless)
     volScalarField computedPcdSw(const volScalarField& Se, const dimensionedScalar Sr) const
     {
-        return -(pc0_ / (m_ * n_)) * (1.0 / (1.0 - Sr)) * pow(pow(Se, -1.0/m_) 
-               - 1.0, 1.0/n_ - 1.0) * pow(Se, -1.0/m_ - 1.0);
+        return -(pc0_ / n_) * (1.0 / (1.0 - Sr)) * pow(Se, -1.0 / (n_ - 1.0));
     }
     
     //- Compute relative permeability from effective saturation  
@@ -118,7 +100,7 @@ public:
     //  Units: [-] (dimensionless)
     volScalarField computeKr(const volScalarField& Se) const
     {
-        return pow(Se, 0.5) * pow(1 - pow(1 - pow(Se, 1.0/m_), m_), 2);
+        return pow(Se, m_);
     }
 };
 

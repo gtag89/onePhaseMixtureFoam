@@ -66,44 +66,44 @@ else
 */
 
 // =============================================================================
-// VAN GENUCHTEN PARAMETER INTERPOLATION
+// PARAMETER INTERPOLATION
 // =============================================================================
 
 // Interpolate van Genuchten parameters based on current hysteresis regime
 // Regime = 1.0: pure imbibition, Regime = 0.0: pure drainage
-m = Regime * mIm.value() + (1.0 - Regime) * mDr.value();
 n = Regime * nIm.value() + (1.0 - Regime) * nDr.value();
+m = Regime * mIm.value() + (1.0 - Regime) * mDr.value();
 l = Regime * lIm.value() + (1.0 - Regime) * lDr.value();
 pc0 = Regime * pc0Im + (1.0 - Regime) * pc0Dr;
 
 // =============================================================================
-// VAN GENUCHTEN MODEL RECONSTRUCTION
+// POROUS MODEL UPDATE
 // =============================================================================
 
-// Create new van Genuchten model instance with updated parameters
-vanGenuchten vg(m, n, l, pc0);
+if (porousModel == "vanGenuchten")
+{
+    Info<< "Initializing van Genuchten model" << nl << endl;
+    
+    vanGenuchten vg(m, n, l, pc0);
+    
+    Kr = vg.computeKr(Se) + KrSmall;
+    pc = vg.computePc(Se);
+    dpcdSw = vg.computedPcdSw(Se, Sr);
+}
+else if (porousModel == "brooksCorey")
+{
+    Info<< "Initializing Brooks-Corey model" << nl << endl;
 
-// =============================================================================
-// RELATIVE PERMEABILITY UPDATE
-// =============================================================================
-
-// Compute relative permeability using van Genuchten model
-// Kr = Se^l * [1 - (1 - Se^(1/m))^m]^2
-Kr = vg.computeKr(Se) + KrSmall;
-
-// KrSmall provides numerical stability for very low permeabilities
-// Prevents division by zero in Darcy drag calculations
-
-// =============================================================================
-// CAPILLARY PRESSURE RELATIONSHIPS
-// =============================================================================
-
-// Compute capillary pressure: pc = pc0 * [(Se^(-1/m) - 1)^(1/n)]
-pc = vg.computePc(Se); 
-
-// Compute derivative dpc/dSw for diffusion coefficient
-// This is needed for the capillary diffusion term in saturation equation
-dpcdSw = vg.computedPcdSw(Se, Sr);
+    brooksCorey bc(n, m, pc0);
+    
+    Kr = bc.computeKr(Se) + KrSmall;
+    pc = bc.computePc(Se);
+    dpcdSw = bc.computedPcdSw(Se, Sr);
+}
+else // porousModel == "none"
+{
+    Info<< "No porous model - using default values" << nl << endl;
+}
 
 // Apply numerical limiters to prevent excessive gradients
 dpcdSw = max(min(dpcdSw, dpcdSwMax), dpcdSwMin);
