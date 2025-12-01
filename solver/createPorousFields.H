@@ -240,7 +240,7 @@ volScalarField Se
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    (Sw - Sr)/(Smax - Sr)
+    (Sw - Sr)/(1.0 - Sr)
 );
 
 // Apply numerical limits to effective saturation
