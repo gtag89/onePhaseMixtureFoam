@@ -90,32 +90,7 @@ public:
         n_(n), 
         l_(l), 
         pc0_(pc0)
-    {
-        // Basic parameter validation
-        if (m_.value() <= 0.0 || m_.value() >= 1.0)
-        {
-            FatalErrorInFunction
-                << "van Genuchten parameter m must be in range (0,1)" << nl
-                << "Provided value: " << m_.value() << nl
-                << exit(FatalError);
-        }
-        
-        if (n_.value() <= 1.0)
-        {
-            FatalErrorInFunction
-                << "van Genuchten parameter n must be > 1" << nl
-                << "Provided value: " << n_.value() << nl
-                << exit(FatalError);
-        }
-        
-        if (l_.value() < 0.0)
-        {
-            FatalErrorInFunction
-                << "Pore connectivity parameter l must be >= 0" << nl
-                << "Provided value: " << l_.value() << nl
-                << exit(FatalError);
-        }
-    }
+    {}
     
     // ==========================================================================
     // PUBLIC MEMBER FUNCTIONS
@@ -126,36 +101,16 @@ public:
     //  Units: [Pa]
     volScalarField computePc(const volScalarField& Se) const
     {
-        // Ensure Se is within valid bounds to prevent numerical issues
-        volScalarField SeBounded = max(min(Se, 0.9999), 1e-6);
-        
-        return pc0_ * pow
-        (
-            pow(SeBounded, -1.0/m_) - 1.0, 
-            1.0/n_
-        );
+        return pc0_ * pow(pow(Se, -1.0/m_) - 1.0, 1.0/n_);
     }
     
     //- Compute derivative of capillary pressure with respect to water saturation
     //  dpc/dSw = -(pc0/(m*n)) * (1/(1-Sr)) * [(Se^(-1/m)-1)^(1/n-1)] * Se^(-1/m-1)
     //  Units: [Pa] (since dSw is dimensionless)
-    volScalarField computedPcdSw
-    (
-        const volScalarField& Se, 
-        const dimensionedScalar Sr
-    ) const
+    volScalarField computedPcdSw(const volScalarField& Se, const dimensionedScalar Sr) const
     {
-        // Ensure Se is within valid bounds
-        volScalarField SeBounded = max(min(Se, 0.9999), 1e-6);
-        
-        // Pre-calculate common terms for efficiency
-        volScalarField SeToMinusInvM = pow(SeBounded, -1.0/m_);
-        volScalarField bracket = SeToMinusInvM - 1.0;
-        
-        return -(pc0_ / (m_ * n_)) 
-             * (1.0 / (1.0 - Sr)) 
-             * pow(bracket, 1.0/n_ - 1.0) 
-             * pow(SeBounded, -1.0/m_ - 1.0);
+        return -(pc0_ / (m_ * n_)) * (1.0 / (1.0 - Sr)) * pow(pow(Se, -1.0/m_) 
+               - 1.0, 1.0/n_ - 1.0) * pow(Se, -1.0/m_ - 1.0);
     }
     
     //- Compute relative permeability from effective saturation  
@@ -164,32 +119,8 @@ public:
     //  Units: [-] (dimensionless)
     volScalarField computeKr(const volScalarField& Se) const
     {
-        // Ensure Se is within valid bounds
-        volScalarField SeBounded = max(min(Se, 0.9999), 1e-6);
-        
-        // Pre-calculate terms for numerical stability
-        volScalarField SeToInvM = pow(SeBounded, 1.0/m_);
-        volScalarField innerTerm = 1.0 - SeToInvM;
-        volScalarField bracketed = 1.0 - pow(innerTerm, m_);
-        
-        return pow(SeBounded, l_) * pow(bracketed, 2.0);
+        return pow(Se, 0.5) * pow(1 - pow(1 - pow(Se, 1.0/m_), m_), 2);
     }
-    
-    // ==========================================================================
-    // ACCESSOR FUNCTIONS
-    // ==========================================================================
-    
-    //- Return van Genuchten parameter m
-    const dimensionedScalar& m() const { return m_; }
-    
-    //- Return van Genuchten parameter n  
-    const dimensionedScalar& n() const { return n_; }
-    
-    //- Return pore connectivity parameter l
-    const dimensionedScalar& l() const { return l_; }
-    
-    //- Return air-entry pressure field
-    const volScalarField& pc0() const { return pc0_; }
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
