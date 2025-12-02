@@ -1,31 +1,5 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
-\*---------------------------------------------------------------------------*/
-
-/*
-Description
-    Updates all porous media properties based on the current saturation field.
-    
-    This routine:
-    1. Calculates effective saturation with numerical limits
-    2. Updates hysteresis regime (currently disabled)
-    3. Interpolates van Genuchten parameters for current regime
-    4. Computes relative permeability and capillary pressure relationships
-    5. Updates Darcy drag coefficient and bulk viscosity
-    
-    Called after each saturation equation solution to maintain consistency
-    between saturation field and porous media properties.
-*/
 
 Info<< "------------- UPDATING POROUS MODEL VARIABLES -------------" << endl;
-
-// =============================================================================
-// EFFECTIVE SATURATION UPDATE
-// =============================================================================
 
 // Calculate effective saturation: Se = (Sw - Sr)/(Smax - Sr)
 // For typical applications where Smax = 1: Se = (Sw - Sr)/(1 - Sr)
@@ -37,10 +11,6 @@ Se = max(min(1.0 - SeMin, Se), SeMin);
 
 // Update face-interpolated saturation for flux calculations
 Swf = fvc::interpolate(Sw); 
-
-// =============================================================================
-// HYSTERESIS REGIME DETERMINATION (CURRENTLY DISABLED)
-// =============================================================================
 
 /*
 // Hysteresis detection based on global saturation levels
@@ -65,24 +35,18 @@ else
 }
 */
 
-// =============================================================================
-// PARAMETER INTERPOLATION
-// =============================================================================
+// Interpolated parameters based on current regime
+dimensionedScalar n = Regime * nIm.value() + (1.0 - Regime) * nDr.value();
+dimensionedScalar l = Regime * lIm.value() + (1.0 - Regime) * lDr.value();
+volScalarField pc0 = Regime * pc0Im + (1.0 - Regime) * pc0Dr;
+dimensionedScalar m = Regime * mIm.value() + (1.0 - Regime) * mDr.value();
+dimensionedScalar lambda = Regime * lambdaIm.value() + (1.0 - Regime) * lambdaDr.value();
+volScalarField pcd = Regime * pcdIm + (1.0 - Regime) * pcdDr;
+dimensionedScalar eta = Regime * etaIm.value() + (1.0 - Regime) * etaDr.value();
 
-// Interpolate van Genuchten parameters based on current hysteresis regime
-// Regime = 1.0: pure imbibition, Regime = 0.0: pure drainage
-n = Regime * nIm.value() + (1.0 - Regime) * nDr.value();
-m = Regime * mIm.value() + (1.0 - Regime) * mDr.value();
-l = Regime * lIm.value() + (1.0 - Regime) * lDr.value();
-pc0 = Regime * pc0Im + (1.0 - Regime) * pc0Dr;
-
-// =============================================================================
-// POROUS MODEL UPDATE
-// =============================================================================
-
+// Porous quantities update
 if (porousModel == "vanGenuchten")
 {
-    Info<< "Initializing van Genuchten model" << nl << endl;
     
     vanGenuchten vg(m, n, l, pc0);
     
@@ -92,9 +56,8 @@ if (porousModel == "vanGenuchten")
 }
 else if (porousModel == "brooksCorey")
 {
-    Info<< "Initializing Brooks-Corey model" << nl << endl;
 
-    brooksCorey bc(n, m, pc0);
+    brooksCorey bc(lambda, eta, pcd);
     
     Kr = bc.computeKr(Se) + KrSmall;
     pc = bc.computePc(Se);
@@ -111,34 +74,20 @@ dpcdSw = max(min(dpcdSw, dpcdSwMax), dpcdSwMin);
 // Interpolate derivative to faces for flux calculations
 dpcdSwf = fvc::interpolate(dpcdSw); 
 
-// =============================================================================
-// FLOW RESISTANCE UPDATES
-// =============================================================================
-
 // Update Darcy drag coefficient [kg/(m³·s)]
-// dragTerm = (ε·Sw·μ)/(Kr·Kabs)
-// This represents the momentum loss due to viscous flow through porous media
 dragTerm = (eps * Sw * mu)/(Kr * Kabs);
-
-// =============================================================================
-// BULK VISCOSITY UPDATE  
-// =============================================================================
 
 // Reset bulk viscosity to base coefficient
 // This could be modified to depend on saturation or other properties
-zeta = zetaCoeff;
+//zeta = zetaCoeff;
 
 // Alternative saturation-dependent bulk viscosity models (examples):
-// zeta = zetaCoeff * pow(1.0 - Sw, alpha);                    // Power law
-// zeta = zetaCoeff * (1.0 + alpha * mag(fvc::grad(Sw)));      // Gradient-dependent  
-// zeta = zetaCoeff * pow(1.0 - Sw, alpha) * pow(Sw, beta);    // Double power law
+zeta = zetaCoeff * (1.0 + alpha * exp(Sw/(beta * mag(1.0 - Sw))));
 
 Info<< "Porous media properties updated successfully" << endl;
 
-// ************************************************************************* //
-
 Info << "Saturation: " << " Min(S) = " << gMin(Sw) << " Max(S) = " << gMax(Sw) << endl;
-//Info << "Saturation upstream: " << Sw[3197] << endl;
+
 Info << "Capillary pressure : " << " Min(pc) = " << gMin(pc) << " Max(pc) = " << gMax(pc) << endl;
 Info << "dpcdSw: " << " Min(dpcdSw) = " << gMin(dpcdSw) << " Max(dpcdSw) = " << gMax(dpcdSw) << endl;
 Info << "Relative permeability: " << " Min(Kr) = " << gMin(Kr) << " Max(Kr) = " << gMax(Kr) << endl;

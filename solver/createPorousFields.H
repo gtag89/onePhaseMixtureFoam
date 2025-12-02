@@ -1,13 +1,4 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
-\*---------------------------------------------------------------------------*/
-// =============================================================================
-// POROUS MEDIA PROPERTIES DICTIONARY
-// =============================================================================
+
 Info<< "------------- CREATING POROUS MODEL VARIABLES -------------" << endl;
 
 Info<< "Reading porous models dictionary\n" << endl;
@@ -23,9 +14,6 @@ IOdictionary porousProperties
     )
 );
 
-// =============================================================================
-// BASIC POROUS MEDIA FIELDS
-// =============================================================================
 Info<< "Reading absolute permeability field Kabs [m²]\n" << endl;
 volScalarField Kabs
 (
@@ -54,9 +42,6 @@ volScalarField eps
     mesh
 );
 
-// =============================================================================
-// POROUS MODEL SELECTION AND VALIDATION
-// =============================================================================
 word porousModel(porousProperties.lookupOrDefault<word>("porousModel", "none"));
 
 if (porousModel != "vanGenuchten" && porousModel != "brooksCorey" 
@@ -80,9 +65,7 @@ if (porousModel == "none")
     }
 }
 
-// =============================================================================
 // VAN GENUCHTEN MODEL COEFFICIENTS
-// =============================================================================
 dictionary coefficients(porousProperties.subDict("coefficients"));
 
 // Residual saturation [-]
@@ -177,32 +160,64 @@ volScalarField pc0Dr
     )
 );
 
-dimensionedScalar mIm = 0.0; 
-dimensionedScalar mDr = 0.0; 
+dimensionedScalar mIm = 1.0 - 1.0/nIm; 
+dimensionedScalar mDr = 1.0 - 1.0/nDr; 
 
-// Computing m parameter according to selected model
-if (porousModel == "vanGenuchten")
-{
-    Info<< "Defining m for van Genuchten model" << nl << endl;
-    
-    mIm = 1.0 - 1.0/nIm;
-    mDr = 1.0 - 1.0/nDr;
-}
-else if (porousModel == "brooksCorey")
-{
-    Info<< "Defining m for Brooks-Corey model" << nl << endl;
-    
-    mIm = (2.0 + 3.0*nIm)/nIm;
-    mDr = (2.0 + 3.0*nDr)/nDr;
-}
-else // porousModel == "none"
-{
-    Info<< "No porous model - no m defined" << nl << endl;
-}
+// BROOKS-COREY MODEL COEFFICIENTS
+// Brooks-Corey parameter lambda for imbibition [-]
+dimensionedScalar lambdaIm
+(    
+    "lambdaIm",
+    dimensionSet(0, 0, 0, 0, 0, 0, 0), 
+    coefficients.lookupOrDefault("lambdaIm", 2.0)
+);
+// Air-entry pressure for imbibition [Pa]
+volScalarField pcdIm
+(   
+    IOobject
+    (   
+        "pcdIm",
+        runTime.timeName(),
+        mesh
+    ),
+    mesh,
+    dimensionedScalar
+    (
+        "pcdIm",
+        dimensionSet(1, -1, -2, 0, 0, 0, 0),
+        coefficients.lookupOrDefault("pcdIm", 1000.0)
+    )
+);
 
-// =============================================================================
+// Brooks-Corey parameter lambda for drainage [-]
+dimensionedScalar lambdaDr
+(    
+    "lambdaDr",
+    dimensionSet(0, 0, 0, 0, 0, 0, 0), 
+    coefficients.lookupOrDefault("lambdaDr", 2.0)
+);
+// Air-entry pressure for drainage [Pa]
+volScalarField pcdDr
+(   
+    IOobject
+    (   
+        "pcdDr",
+        runTime.timeName(),
+        mesh
+    ),
+    mesh,
+    dimensionedScalar
+    (
+        "pcdDr",
+        dimensionSet(1, -1, -2, 0, 0, 0, 0),
+        coefficients.lookupOrDefault("pcdDr", 1000.0)
+    )
+);
+
+dimensionedScalar etaIm = (2.0 + 3.0*lambdaIm)/lambdaIm; 
+dimensionedScalar etaDr = (2.0 + 3.0*lambdaDr)/lambdaDr; 
+
 // NUMERICAL LIMITERS
-// =============================================================================
 dictionary limiters(porousProperties.subDict("limiters"));
 
 // Maximum allowed dpcdSw [Pa] (most negative value)
@@ -229,22 +244,20 @@ dimensionedScalar KrSmall
     limiters.lookupOrDefault("KrSmall", 1e-6)
 );
 
-// =============================================================================
 // HYSTERESIS MODEL
-// =============================================================================
 // Regime scalar: 1.0 = imbibition, 0.0 = drainage
-// TODO: This should be computed based on saturation history
+// This should be computed based on saturation history
 scalar Regime = 1.0;
 
 // Interpolated parameters based on current regime
 dimensionedScalar n = Regime * nIm.value() + (1.0 - Regime) * nDr.value();
-dimensionedScalar m = Regime * mIm.value() + (1.0 - Regime) * mDr.value();
 dimensionedScalar l = Regime * lIm.value() + (1.0 - Regime) * lDr.value();
 volScalarField pc0 = Regime * pc0Im + (1.0 - Regime) * pc0Dr;
+dimensionedScalar m = Regime * mIm.value() + (1.0 - Regime) * mDr.value();
+dimensionedScalar lambda = Regime * lambdaIm.value() + (1.0 - Regime) * lambdaDr.value();
+volScalarField pcd = Regime * pcdIm + (1.0 - Regime) * pcdDr;
+dimensionedScalar eta = Regime * etaIm.value() + (1.0 - Regime) * etaDr.value();
 
-// =============================================================================
-// DERIVED SATURATION FIELDS
-// =============================================================================
 // Effective saturation [-]
 volScalarField Se
 (
@@ -265,9 +278,7 @@ Se = max(min(1.0 - SeMin, Se), SeMin);
 // Interpolated saturation at faces
 surfaceScalarField Swf("Swf", fvc::interpolate(Sw));
 
-// =============================================================================
-// RELATIVE PERMEABILITY
-// =============================================================================
+// Relative permeability [-]
 Info<< "Creating relative permeability field Kr [-]\n" << endl;
 volScalarField Kr
 (
@@ -283,9 +294,7 @@ volScalarField Kr
     dimensionedScalar("Kr", dimensionSet(0, 0, 0, 0, 0, 0, 0), 0.0)
 );
 
-// =============================================================================
-// CAPILLARY PRESSURE
-// =============================================================================
+// Capillary pressure [Pa]
 Info<< "Creating capillary pressure field pc [Pa]\n" << endl;
 volScalarField pc
 (
@@ -301,9 +310,7 @@ volScalarField pc
     dimensionedScalar("pc", dimensionSet(1, -1, -2, 0, 0, 0, 0), 0.0)
 );
 
-// =============================================================================
-// CAPILLARY PRESSURE DERIVATIVES
-// =============================================================================
+// Capillary pressure derivative [Pa]
 Info<< "Creating dpcdSw field [Pa]\n" << endl;
 volScalarField dpcdSw
 (
@@ -333,7 +340,7 @@ else if (porousModel == "brooksCorey")
 {
     Info<< "Initializing Brooks-Corey model" << nl << endl;
 
-    brooksCorey bc(n, m, pc0);
+    brooksCorey bc(lambda, eta, pcd);
     
     Kr = bc.computeKr(Se) + KrSmall;
     pc = bc.computePc(Se);
@@ -350,9 +357,7 @@ dpcdSw = max(min(dpcdSw, dpcdSwMax), dpcdSwMin);
 // Interpolated derivative at faces
 surfaceScalarField dpcdSwf("dpcdSwf", fvc::interpolate(dpcdSw)); 
 
-// =============================================================================
-// DARCY DRAG COEFFICIENT
-// =============================================================================
+// Darcy drag coefficient [kg/(m³·s)]
 Info<< "Creating Darcy drag term [kg/(m³·s)]\n" << endl;
 volScalarField dragTerm
 (

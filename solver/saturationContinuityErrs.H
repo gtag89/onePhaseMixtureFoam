@@ -37,10 +37,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 {
-    // ==========================================================================
-    // SATURATION MASS CONSERVATION CHECK
-    // ==========================================================================
-    
     // Calculate total saturation in domain at previous time step
     // This serves as the normalization factor for relative errors
     dimensionedScalar totalMass = fvc::domainIntegrate(SwPrev);
@@ -51,7 +47,7 @@ Description
         totalMass.value() = SMALL;
         WarningInFunction
             << "Very small total saturation detected: " << totalMass.value() << nl
-            << "Continuity error calculation may be inaccurate" << endl;
+            << "Continuity error calculation inaccurate" << endl;
     }
     
     // Sum of absolute local saturation changes (normalized)
@@ -67,9 +63,6 @@ Description
     // Accumulate global error over simulation time
     cumulativeContErr += globalContErr;
     
-    // ==========================================================================
-    // OUTPUT CONTINUITY ERROR INFORMATION
-    // ==========================================================================
     Info<< "Saturation continuity errors:" << nl
         << "    Sum local     = " << sumLocalContErr << nl
         << "    Global        = " << globalContErr << nl  

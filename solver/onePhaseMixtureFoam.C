@@ -135,10 +135,6 @@ int main(int argc, char *argv[])
         ++runTime;
 
         Info<< "Time = " << runTime.timeName() << nl << endl;
-
-        // =======================================================================
-        // PIMPLE LOOP: COUPLED MOMENTUM-SATURATION SOLUTION
-        // =======================================================================
         
         // Store velocity from previous time step for convergence monitoring
         volVectorField UPrev = U;
@@ -146,17 +142,9 @@ int main(int argc, char *argv[])
         // Outer PIMPLE loop for pressure-velocity coupling
         while (pimple.loop())
         {
-            // ===================================================================
-            // MOMENTUM EQUATION
-            // ===================================================================
-            
             // Solve momentum equation with capillary pressure gradients
             #include "UEqn.H"
              
-            // ===================================================================
-            // SATURATION CORRECTION LOOP  
-            // ===================================================================
-            
             // Store saturation from previous iteration for convergence monitoring
             volScalarField SwPrev = Sw;
 
@@ -168,17 +156,9 @@ int main(int argc, char *argv[])
             }
         }
         
-        // =======================================================================
-        // POST-ITERATION UPDATES AND DIAGNOSTICS
-        // =======================================================================
-        
         // Update saturation history for next time step
         SwOld = Sw;
 
-        // =======================================================================
-        // OUTPUT AND TIME ADVANCEMENT
-        // =======================================================================
-        
         // Write solution fields to disk
         runTime.write();
 

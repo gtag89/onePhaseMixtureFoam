@@ -1,17 +1,6 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
-\*---------------------------------------------------------------------------*/
-
 // Create time-step control for adjustable time stepping
 #include "createRDeltaT.H"
 
-// =============================================================================
-// VELOCITY FIELD
-// =============================================================================
 Info<< "Reading velocity field U\n" << endl;
 volVectorField U
 (
@@ -26,9 +15,6 @@ volVectorField U
     mesh
 );
 
-// =============================================================================
-// THERMOPHYSICAL AND TRANSPORT PROPERTIES
-// =============================================================================
 Info << nl << "Reading thermophysical properties" << endl;
 IOdictionary thermophysicalProperties
 (
@@ -94,16 +80,10 @@ dimensionedScalar beta
     transport.lookupOrDefault("beta", 1.0)
 );
 
-// =============================================================================
-// GRAVITY AND REFERENCE FIELDS
-// =============================================================================
 #include "readGravitationalAcceleration.H"
 #include "readhRef.H"
 #include "gh.H"
 
-// =============================================================================
-// SATURATION FIELDS
-// =============================================================================
 Info<< "Reading water saturation field Sw\n" << endl;
 volScalarField Sw
 (
@@ -120,10 +100,6 @@ volScalarField Sw
 
 // Store previous time step saturation for time derivatives
 volScalarField SwOld = Sw;
-
-// =============================================================================
-// COMPUTED FIELDS
-// =============================================================================
 
 // Dynamic viscosity field [kg/(m·s)]
 volScalarField mu
@@ -161,9 +137,6 @@ volScalarField rho
 // Create mass flux field
 #include "compressibleCreatePhi.H"
 
-// =============================================================================
-// NON-DARCIAN FLOW COEFFICIENT
-// =============================================================================
 const label& nCells = mesh.nCells();
 
 volScalarField zeta
@@ -181,19 +154,10 @@ volScalarField zeta
 );
 
 // Initialize zeta coefficient (various models available - see comments below)
-zeta = zetaCoeff;
+//zeta = zetaCoeff;
 
-// Alternative zeta models (commented out - uncomment as needed):
-// Forchheimer-type models:
-// zeta = zetaCoeff * pow(1.0 - Sw, alpha);                                    // Power law with (1-Sw)
-// zeta = zetaCoeff * pow(1.0 - Sw, alpha) * pow(Sw, beta);                   // Double power law
-// 
-// Capillary pressure dependent models:
-// zeta = zetaCoeff * (1.0 + alpha * mag(dpcdSw/pc0));                        // Linear pc dependence
-// zeta = zetaCoeff * (1.0 + alpha * pow(1.0/mag(dpcdSw/pc0), beta));         // Power law pc dependence
-//
-// Exponential models:
-// zeta = zetaCoeff * (1.0 + alpha * exp(-pow((Sw - Smax)/Sw, beta)));        // Exponential transition
+// Alternative saturation-dependent bulk viscosity models (examples):
+zeta = zetaCoeff * (1.0 + alpha * exp(Sw/(beta * mag(1.0 - Sw))));
 //
 // Gradient dependent models:
 // zeta = zetaCoeff * (1.0 + alpha * mag(fvc::grad(Sw)));                     // Saturation gradient dependent
@@ -213,9 +177,6 @@ forAll(Sw, celli)
 }
 */
 
-// =============================================================================
-// SOLVER SETUP
-// =============================================================================
 // Set flux requirement for saturation equation
 mesh.setFluxRequired(Sw.name());
 

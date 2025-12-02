@@ -23,9 +23,6 @@ Description
 */
 
 {
-    // ==========================================================================
-    // TIME STEPPING CONTROL PARAMETERS
-    // ==========================================================================
     volScalarField& rDeltaT = trDeltaT.ref();
     const dictionary& pimpleDict = pimple.dict();
     
@@ -58,13 +55,7 @@ Description
     // Store current time step for damping calculations
     volScalarField rDeltaT0("rDeltaT0", rDeltaT);
     
-    // ==========================================================================
-    // COURANT-BASED TIME STEP CALCULATION
-    // ==========================================================================
-    
     // Calculate reciprocal time step based on local Courant number
-    // rDeltaT = max(1/maxDeltaT, |φ|/(2*maxCo*V*ρ))
-    // where φ is the mass flux and V is cell volume
     rDeltaT.ref() = max
     (
         // Reciprocal of maximum allowed time step
@@ -94,10 +85,6 @@ Description
         );
     }
     */
-    
-    // ==========================================================================
-    // TIME STEP POST-PROCESSING
-    // ==========================================================================
     
     // Update boundary conditions for reciprocal time step field
     rDeltaT.correctBoundaryConditions();
