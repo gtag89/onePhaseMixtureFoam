@@ -53,7 +53,7 @@ Each tutorial directory contains:
 
 Cite this work as
 -----------------
-* Tagliavini, G.; Lunati, I.: onePhaseMixtureFoam: A hyperbolic momentum solver for saturation overshoot and gravity fingering in unsaturated porous media. [In preparation for: Advances in Water Resources].
+*  Tagliavini, G., Lunati, I. Saturation overshoot and gravity fingering with a hyperbolic mixture-theory formulation. Available at SSRN: https://ssrn.com/abstract=6308718 or http://dx.doi.org/10.2139/ssrn.6308718  [Submitted to: Advances in Water Resources].
 
 License
 -------
