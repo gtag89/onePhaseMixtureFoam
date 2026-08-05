@@ -220,28 +220,20 @@ dimensionedScalar etaDr = (2.0 + 3.0*lambdaDr)/lambdaDr;
 // NUMERICAL LIMITERS
 dictionary limiters(porousProperties.subDict("limiters"));
 
-// Maximum allowed dpcdSw [Pa] (most negative value)
-dimensionedScalar dpcdSwMax
+// Minimum allowed dpcdSw [Pa] (most positive value)
+dimensionedScalar dpcdSwSmall
 (
-    "dpcdSwMax", 
-    dimensionSet(1, -1, -2, 0, 0, 0, 0), 
-    limiters.lookupOrDefault("dpcdSwMax", -1e-6)
-);
-
-// Minimum allowed dpcdSw [Pa] (most positive value) 
-dimensionedScalar dpcdSwMin
-(
-    "dpcdSwMin", 
-    dimensionSet(1, -1, -2, 0, 0, 0, 0), 
-    limiters.lookupOrDefault("dpcdSwMin", -1e+6)
+    "dpcdSwSmall",
+    dimensionSet(1, -1, -2, 0, 0, 0, 0),
+    limiters.lookupOrDefault("dpcdSwSmall", -1e+1)
 );
 
 // Minimum relative permeability for numerical stability [-]
 dimensionedScalar KrSmall
 (
-    "KrSmall", 
-    dimensionSet(0, 0, 0, 0, 0, 0, 0), 
-    limiters.lookupOrDefault("KrSmall", 1e-6)
+    "KrSmall",
+    dimensionSet(0, 0, 0, 0, 0, 0, 0),
+    limiters.lookupOrDefault("KrSmall", 1e-8)
 );
 
 // HYSTERESIS MODEL
@@ -334,7 +326,8 @@ if (porousModel == "vanGenuchten")
     
     Kr = vg.computeKr(Se) + KrSmall;
     pc = vg.computePc(Se);
-    dpcdSw = vg.computedPcdSw(Se, Sr);
+    dpcdSw = vg.computedPcdSw(Se, Sr) + dpcdSwSmall;
+    
 }
 else if (porousModel == "brooksCorey")
 {
@@ -344,15 +337,13 @@ else if (porousModel == "brooksCorey")
     
     Kr = bc.computeKr(Se) + KrSmall;
     pc = bc.computePc(Se);
-    dpcdSw = bc.computedPcdSw(Se, Sr);
+    dpcdSw = bc.computedPcdSw(Se, Sr) + dpcdSwSmall;
+    
 }
 else // porousModel == "none"
 {
     Info<< "No porous model - using default values" << nl << endl;
 }
-
-// Apply numerical limiters
-dpcdSw = max(min(dpcdSw, dpcdSwMax), dpcdSwMin);
 
 // Interpolated derivative at faces
 surfaceScalarField dpcdSwf("dpcdSwf", fvc::interpolate(dpcdSw)); 

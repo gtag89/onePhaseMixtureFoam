@@ -32,28 +32,12 @@ boundaryField
     }
     top
     {
-        //type                flowRateInletVelocity;
-        //volumetricFlowRate  4.76e-08; //m3/s
-        //extrapolateProfile  yes;
-        //rho                 rho;
-        //rhoInlet            1000;
-        //value               uniform (0 0 0);
-        type              fixedValue;
-        //type              pressureInletOutletVelocity;
-        //inletValue        uniform (0 0 -0.000376); 
-        value             uniform (0 0 -8.835e-04); 
+        type            fixedValue;
+        value           uniform (0 0 -8.84e-04);
     }
     bottom
     {
-        type              zeroGradient; //advective; //matchedFlowRateOutletVelocity; 
-        //inletPatch        top; 
-        //rho               rho;
-        //phi               phi;
-        //type            pressureInletOutletVelocity;
-        //value           uniform (0 0 0);
-        //type            inletOutlet; //fixedValue;
-        //inletValue      uniform (0 0 -0.00038); 
-        //value           uniform (0 0 0); 
+        type            zeroGradient;
     }
 }
 

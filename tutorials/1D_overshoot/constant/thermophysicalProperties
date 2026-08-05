@@ -46,9 +46,8 @@ mixture
         muw           1.0e-3;
         L             0.4;
         rhow          1000;
-        zetaCoeff     460;
-        alpha         2;
-        beta          1;
+        zetaCoeff     100;
+        alpha         3.8;
     }
 }
 

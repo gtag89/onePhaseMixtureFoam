@@ -67,6 +67,21 @@ Description
         << "    Sum local     = " << sumLocalContErr << nl
         << "    Global        = " << globalContErr << nl  
         << "    Cumulative    = " << cumulativeContErr << nl;
+    
+    surfaceScalarField phiw("phiw", phiHbyA*fvc::interpolate(Sw) + SwEqn.flux());
+    scalar massIn = 0.0;
+    forAll(phiw.boundaryField(), patchi)
+    {
+        if (!phiw.boundaryField()[patchi].coupled())
+        {
+          massIn -= gSum(phiw.boundaryField()[patchi]);   // inflow positive (Sf outward)
+        }
+    }
+    massIn *= runTime.deltaTValue();
+
+    scalar dMass = (fvc::domainIntegrate(rho*(Sw - Sw.oldTime()))).value();
+    Info<< "Water balance error = "
+        << (dMass - massIn)/max(mag(massIn), SMALL) << endl;
 }
 
 // ************************************************************************* //

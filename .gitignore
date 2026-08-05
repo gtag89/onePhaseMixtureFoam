@@ -1,0 +1,19 @@
+# Build artifacts
+solver/Make/linux64*
+solver/Make/darwin64*
+lnInclude/
+*.o
+*.dep
+
+# Case runtime files
+tutorials/*/0/
+tutorials/*/[1-9]*/
+tutorials/*/0.*/
+tutorials/*/constant/polyMesh/
+tutorials/*/processor*/
+tutorials/*/postProcessing/
+tutorials/*/log.*
+tutorials/*/log
+
+# OS files
+.DS_Store

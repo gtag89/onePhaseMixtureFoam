@@ -15,7 +15,7 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application     overshootSatPimpleFoam;
+application     onePhaseMixtureFoam;
 
 startFrom       latestTime;
 
@@ -23,13 +23,13 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         150; //1400;//3000;
+endTime         6000;
 
-deltaT          1.0e-3;//1.0e-5;
+deltaT          1.0e-2;
 
-writeControl    timeStep; //adjustableRunTime; 
+writeControl    timeStep;
 
-writeInterval   1000; //10000;//1.0e+3; //200;
+writeInterval   100;
 
 purgeWrite      0;
 

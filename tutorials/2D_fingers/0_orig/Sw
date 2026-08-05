@@ -32,21 +32,12 @@ boundaryField
     }
     top
     {
-        
-        //type            fixedFluxPressure; //zeroGradient;
-        //type            inletOutlet;
-        //inletValue      uniform 0.5;
         type            fixedValue;
-        value           uniform 0.35; //$internalField; 
+        value           uniform 0.35;
     }
     bottom
     {
         type            zeroGradient;
-        //type            inletOutlet;
-        //value           $internalField;
-        //inletValue      $internalField;
-        //type            fixedValue;
-        //value           $internalField;
     }
 }
 

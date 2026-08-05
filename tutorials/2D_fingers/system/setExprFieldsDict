@@ -14,16 +14,19 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Preload any required fields (optional)
+// Generates the random absolute permeability field used in 0_orig/Kabs:
+// log-uniformly distributed between 1e-9 and 1e-8 m^2.
+// Run with:  setExprFields
+
 readFields      ( Kabs );
 
-expressions (
-        Kabs 
-     	{
-		field Kabs;
-		expression "exp( log(1e-9) + (log(1e-7) - log(1e-9)) * rand() )";
-	}
+expressions
+(
+    Kabs
+    {
+        field       Kabs;
+        expression  "exp( log(1e-9) + (log(1e-8) - log(1e-9)) * rand() )";
+    }
 );
-
 
 // ************************************************************************* //

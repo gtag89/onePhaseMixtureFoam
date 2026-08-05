@@ -16,6 +16,8 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 dynamicFvMesh   staticFvMesh;
+
+// Alternative: adaptive mesh refinement based on the saturation gradient
 //dynamicFvMesh   dynamicRefineFvMesh;
 
 dynamicRefineFvMeshCoeffs
@@ -45,12 +47,6 @@ dynamicRefineFvMeshCoeffs
     // Flux field and corresponding velocity field. Fluxes on changed
     // faces get recalculated by interpolating the velocity. Use 'none'
     // on surfaceScalarFields that do not need to be reinterpolated.
-    //~ correctFluxes
-    //~ (
-        //~ (phi none)
-        //~ (phi_0 none)
-        //~ (phi_0_0 none)
-    //~ );
     correctFluxes
     (
         (phi U)
@@ -62,7 +58,5 @@ dynamicRefineFvMeshCoeffs
     // Write the refinement level as a volScalarField
     dumpLevel       true;
 }
-
-
 
 // ************************************************************************* //

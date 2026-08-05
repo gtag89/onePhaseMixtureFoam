@@ -35,6 +35,7 @@ divSchemes
 laplacianSchemes
 {
     default         Gauss cubic limited 1.0;
+    laplacian(diffGradSw,Sw)  Gauss harmonic corrected;
 }
 
 interpolationSchemes

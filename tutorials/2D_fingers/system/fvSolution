@@ -18,63 +18,48 @@ solvers
 {
     "(Sw|divU)"
     {
-        //solver           GAMG;
-        //tolerance        1e-8;
-        //relTol           0.01;
-        //smoother         DICGaussSeidel;
-
         solver             PBiCGStab;
         preconditioner     DIC;
         tolerance          1.0e-8;
         relTol             0.01;
         minIter            1;
-
     }
 
     "(Sw|divU)Final"
     {
         $Sw;
         relTol             0.0;
-        //minIter            10;
+    }
 
-    }
     "(U|rho)"
-    {        
-        solver             PBiCGStab;
-        preconditioner     DILU;
-        tolerance          1.0e-8;
-        relTol             0.01;
-        //minIter            1;
-        
-        //solver          smoothSolver;
-        //smoother        symGaussSeidel;
-        //tolerance          1.0e-8;
-        //relTol             0.01;
-	//maxIter         10000;
+    {
+        solver          GAMG;
+        smoother        GaussSeidel;
+        tolerance       1e-8;
+        relTol          0.01;
+        nPreSweeps      0;
+        nPostSweeps     2;
+        nFinestSweeps   2;
+        cacheAgglomeration  true;
+        agglomerator    faceAreaPair;
+        nCellsInCoarsestLevel 200;
+        mergeLevels     1;
     }
+
     "(U|rho)Final"
     {
         $U;
         relTol          0;
     }
-
 }
 
 PIMPLE
 {
-    momentumPredictor no; //yes;
+    momentumPredictor no;
     nOuterCorrectors  10;
     nCorrectors       4;
     nNonOrthogonalCorrectors 0;
-    //simpleRho       true;
-    
-    //rhoMin	      1e-6;
-    //rhoMax	      1000;
-    //pMinFactor      0.8;
-    //pMaxFactor      1.0;
-    //pRefCell        0;
-    //pRefValue       0;
-    
+
     residualControl
     {
         U
@@ -94,7 +79,7 @@ relaxationFactors
 {
     fields
     {
-        Sw		 0.5;
+        Sw              0.5;
         U               0.7;
     }
     equations
@@ -103,13 +88,5 @@ relaxationFactors
         U               0.9;
     }
 }
-/*relaxationFactors
-{
-    equations
-    {
-        ".*" 0.9;
-    }
-}*/
-
 
 // ************************************************************************* //

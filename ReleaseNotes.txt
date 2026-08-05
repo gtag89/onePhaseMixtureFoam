@@ -5,7 +5,7 @@
 
 ### Solvers
 
-- onePhaseMixture
+- onePhaseMixtureFoam
 
   - single-phase flow solver for hyperbolic momentum in porous media
 

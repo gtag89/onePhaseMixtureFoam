@@ -32,17 +32,11 @@ boundaryField
     }
     top
     {
-
-        //type                flowRateInletVelocity;
-        //volumetricFlowRate  1.66791e-08; //m3/s
-        //extrapolateProfile  yes;
-        //value               uniform (0 0 0);
         type            fixedValue;
-        value           uniform (0 0 -1.0e-3); 
+        value           uniform (0 0 -1.0e-3);
     }
     bottom
     {
-        //type            zeroGradient;
         type            pressureInletOutletVelocity;
         value           uniform (0 0 0);
     }

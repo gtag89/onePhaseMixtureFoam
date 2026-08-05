@@ -66,26 +66,7 @@ Description
         fvc::surfaceSum(mag(phi))()()
         /((2.0*maxCo)*mesh.V()*rho())
     );
-    
-    /*
-    // Transonic correction (disabled for incompressible flow)
-    // This would add acoustic time step limitations for compressible flow
-    if (pimple.transonic())
-    {
-        surfaceScalarField phid
-        (
-            "phid",
-            fvc::interpolate(psi)*fvc::flux(U)
-        );
-        rDeltaT.ref() = max
-        (
-            rDeltaT(),
-            fvc::surfaceSum(mag(phid))()()
-            /((2*maxCo)*mesh.V()*psi())
-        );
-    }
-    */
-    
+
     // Update boundary conditions for reciprocal time step field
     rDeltaT.correctBoundaryConditions();
     

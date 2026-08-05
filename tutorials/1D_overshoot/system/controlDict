@@ -14,10 +14,6 @@ FoamFile
     object      controlDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-libs
-(
-    "libfixedFluxSaturationBC.so"
-);
 
 application     onePhaseMixtureFoam;
 
@@ -27,13 +23,13 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         600; //1400;//3000;
+endTime         600;
 
-deltaT          1.0e-2;
+deltaT          1.0e-4;
 
-writeControl    timeStep; 
+writeControl    timeStep;
 
-writeInterval   100;
+writeInterval   10000;
 
 purgeWrite      0;
 
@@ -51,7 +47,7 @@ runTimeModifiable yes;
 
 adjustTimeStep   no;
 
-maxCo            0.001; //0.2;
+maxCo            0.001;
 maxDeltaT        0.01;
 
 

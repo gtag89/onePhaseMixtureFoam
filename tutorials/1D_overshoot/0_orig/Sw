@@ -18,7 +18,7 @@ FoamFile
 
 dimensions      [0 0 0 0 0 0 0];
 
-internalField   uniform  0.01;
+internalField   uniform  0.046;
 
 boundaryField
 {
@@ -30,28 +30,14 @@ boundaryField
     {
         type            empty;
     }
-    
     top
     {
-        //type            zeroGradient; 
-        type		 fixedValue; 
+        type            fixedValue;
         value           uniform 0.426;
-        //type            mixed;
-        //refValue        uniform 1.0;      // Target saturation
-        //refGradient     uniform 0.0;        // Zero gradient
-        //valueFraction   uniform 0.5;              // Blend: 80% value, 20% gradient
-
     }
-    
     bottom
     {
-        //type            zeroGradient;
-        type            fixedValue;
-        value           $internalField;
-        //type            inletOutlet;
-        //inletValue      $internalField;  // Residual if flow reverses
-        //value           uniform 0.0;
-        //phi             phi;
+        type            zeroGradient;
     }
 }
 

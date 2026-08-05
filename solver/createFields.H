@@ -14,6 +14,14 @@ volVectorField U
     ),
     mesh
 );
+const label inletPatchID = mesh.boundaryMesh().findPatchID("top");
+if (inletPatchID < 0)
+{
+    FatalError << "Patch 'top' not found" << exit(FatalError);
+}
+// Face-area-weighted average of pore velocity magnitude at inlet
+scalar UinVal = gAverage(mag(U.boundaryField()[inletPatchID]));
+dimensionedScalar UinDim("UinDim", dimVelocity, UinVal);
 
 Info << nl << "Reading thermophysical properties" << endl;
 IOdictionary thermophysicalProperties
@@ -58,7 +66,7 @@ dimensionedScalar L
 
 // Zeta coefficient for non-Darcian flow [kg/(m·s)]
 dimensionedScalar zetaCoeff
-(    
+(
     "zetaCoeff",
     dimensionSet(1, -1, -1, 0, 0, 0, 0),
     transport.lookupOrDefault("zetaCoeff", 0.0)
@@ -69,7 +77,7 @@ dimensionedScalar alpha
 (    
     "alpha",
     dimensionSet(0, 0, 0, 0, 0, 0, 0),  
-    transport.lookupOrDefault("alpha", 1.0)
+    transport.lookupOrDefault("alpha", 0.0)
 );
 
 // Beta parameter (dimensionless) - model dependent
@@ -77,7 +85,15 @@ dimensionedScalar beta
 (    
     "beta",
     dimensionSet(0, 0, 0, 0, 0, 0, 0),  
-    transport.lookupOrDefault("beta", 1.0)
+    transport.lookupOrDefault("beta", 0.0)
+);
+
+// Gamma parameter (dimensionless) - model dependent
+dimensionedScalar gamma
+(    
+    "gamma",
+    dimensionSet(0, 0, 0, 0, 0, 0, 0),  
+    transport.lookupOrDefault("gamma", 0.0)
 );
 
 #include "readGravitationalAcceleration.H"
@@ -98,9 +114,6 @@ volScalarField Sw
     mesh
 );
 
-// Store previous time step saturation for time derivatives
-volScalarField SwOld = Sw;
-
 // Dynamic viscosity field [kg/(m·s)]
 volScalarField mu
 (
@@ -115,9 +128,6 @@ volScalarField mu
     mesh,
     muw
 );
-
-// Include porous media specific fields
-#include "createPorousFields.H"
 
 // Density field [kg/m³]
 volScalarField rho
@@ -137,8 +147,10 @@ volScalarField rho
 // Create mass flux field
 #include "compressibleCreatePhi.H"
 
-const label& nCells = mesh.nCells();
+// Include porous media specific fields
+#include "createPorousFields.H"
 
+// Bulk (second) viscosity field [kg/(m·s)]
 volScalarField zeta
 (
     IOobject
@@ -147,35 +159,19 @@ volScalarField zeta
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
-        IOobject::NO_WRITE
+        IOobject::AUTO_WRITE
     ),
     mesh,
     dimensionedScalar("zeta", dimensionSet(1, -1, -1, 0, 0, 0, 0), 0.0)
 );
 
-// Initialize zeta coefficient (various models available - see comments below)
-//zeta = zetaCoeff;
-
-// Alternative saturation-dependent bulk viscosity models (examples):
-zeta = zetaCoeff * (1.0 + alpha * exp(Sw/(beta * mag(1.0 - Sw))));
-//
-// Gradient dependent models:
-// zeta = zetaCoeff * (1.0 + alpha * mag(fvc::grad(Sw)));                     // Saturation gradient dependent
-
-/*
-// Alternative: Cell-by-cell zeta assignment based on saturation thresholds
-forAll(Sw, celli)
-{
-    if (Sw[celli] < alpha.value() || Sw[celli] > beta.value())
-    {
-        zeta[celli] = zetaCoeff.value();
-    }
-    else
-    {
-        zeta[celli] = zetaCoeff.value() * (1.0 + gamma.value() * Sw[celli]);
-    }
-}
-*/
+// Initialize the bulk viscosity model from the inlet saturation and velocity
+dimensionedScalar Sin("Sin", dimless, gAverage(Sw.boundaryField()[inletPatchID]));
+dimensionedScalar avgU("avgU", dimless, UinVal);
+dimensionedScalar zetaFunc = zetaCoeff * (1.0 + 70.3035 * pow(1.0 - Sin, 4.9699));
+dimensionedScalar alphaFunc = alpha / (1.0 + exp(3.1143 * (log10(avgU) + 3.1213)));
+volScalarField customFunc = exp(alphaFunc * 0.5 * Se / max(1 - Se, Sr));
+zeta = zetaFunc * (1 + alphaFunc * customFunc);
 
 // Set flux requirement for saturation equation
 mesh.setFluxRequired(Sw.name());

@@ -79,11 +79,7 @@ int main(int argc, char *argv[])
     #include "initContinuityErrs.H"
     #include "createFields.H"
     #include "createRhoUfIfPresent.H"
-    
-    // Note: Turbulence model validation disabled for direct viscous modeling
-    // turbulence->validate();
 
-    // Initialize time stepping for non-LTS cases
     if (!LTS)
     {
         #include "compressibleCourantNo.H"
@@ -96,38 +92,15 @@ int main(int argc, char *argv[])
 
     while (runTime.run())
     {
-        // =======================================================================
-        // DYNAMIC MESH AND TIME STEP CONTROL
-        // =======================================================================
-        
         #include "readDyMControls.H"
-
-        // Store divrhoU from the previous mesh for phi correction
-        // Currently disabled - uncomment if mesh motion is needed
-        /*
-        autoPtr<volScalarField> divrhoU;
-        if (correctPhi)
-        {
-            divrhoU.reset
-            (
-                new volScalarField
-                (
-                    "divrhoU",
-                    fvc::div(fvc::absolute(phi, rho, U))
-                )
-            );
-        }
-        */
 
         // Set time step based on Courant number constraints
         if (LTS)
         {
-            // Local time stepping - adaptive time step per cell
             #include "setRDeltaT.H"
         }
         else
         {
-            // Global time stepping - single time step for entire domain
             #include "compressibleCourantNo.H"
             #include "setDeltaT.H"
         }
@@ -135,34 +108,28 @@ int main(int argc, char *argv[])
         ++runTime;
 
         Info<< "Time = " << runTime.timeName() << nl << endl;
-        
+
         // Store velocity from previous time step for convergence monitoring
         volVectorField UPrev = U;
-        
-        // Outer PIMPLE loop for pressure-velocity coupling
+
+        // Outer PIMPLE loop
         while (pimple.loop())
         {
-            // Solve momentum equation with capillary pressure gradients
             #include "UEqn.H"
-             
-            // Store saturation from previous iteration for convergence monitoring
+
+            // Store saturation from previous iteration for convergence
+            // monitoring
             volScalarField SwPrev = Sw;
 
             // Inner corrector loop for saturation-velocity coupling
             while (pimple.correct())
             {
-                // Solve saturation transport with momentum coupling
                 #include "SwEqn.H"
             }
         }
-        
-        // Update saturation history for next time step
-        SwOld = Sw;
 
-        // Write solution fields to disk
         runTime.write();
 
-        // Report computational performance
         runTime.printExecutionTime(Info);
     }
 

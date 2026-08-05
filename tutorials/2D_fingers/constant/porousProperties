@@ -15,25 +15,42 @@ FoamFile
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-porousModel 		vanGenuchten;
+porousModel     vanGenuchten;
+
+// Van Genuchten coefficients
+coefficients
+{
+    SeMin           1.0e-4;
+    Smax            1.0;
+    Sr              0.05;
+    nIm             6.23;
+    lIm             0.8;
+    pc0Im           554;
+    nDr             10.57;
+    lDr             0.2;
+    pc0Dr           984.90;
+}
+
+/*
+// Alternative: Brooks-Corey model
+porousModel     brooksCorey;
 
 coefficients
 {
-	// Van Genuchten coefficients
-	SeMin                 1.0e-4;
-	Smax                  1.0;
-	Sr                    0.046; 
-	nIm                   6.23; // 2.58; 
-	pc0Im                 555.56; // 116.28; //1/alpha 
-	nDr                   10.57; //13.84; 
-	pc0Dr                 984.90; //1250;
+    SeMin           1.0e-4;
+    Smax            1.0;
+    Sr              0.01;
+    lambdaIm        3.23;
+    pcdIm           655.56;
+    lambdaDr        10.57;
+    pcdDr           984.90;
 }
+*/
 
 limiters
 {
-	dpcdSwMax	      -1e-6;
-	dpcdSwMin	      -1e+6;
-	KrSmall	       1e-6;	
+    dpcdSwSmall     -1e+4;
+    KrSmall         1e-6;
 }
 
 // ************************************************************************* //

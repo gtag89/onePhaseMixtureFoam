@@ -5,22 +5,19 @@ MRF.correctBoundaryVelocity(U);
 Info << "ASSEMBLING MOMENTUM EQUATION" << endl;
 
 fvVectorMatrix UEqn
-( 
+(
     fvm::ddt(rho, U) + fvm::div(phi, U) + MRF.DDt(rho, U)
-    // Standard turbulence model (commented out for direct viscous modeling)
-    // + turbulence->divDevRhoReff(U)
-    // Laplacian viscous term: 
+    // Laplacian viscous term
   - fvm::laplacian(mu, U)
-    // Viscous stress divergence:  
-    // This handles the non-isotropic part of the viscous stress tensor
+    // Non-isotropic part of the viscous stress tensor
   - fvc::div(mu * dev2(T(fvc::grad(U))))
-    // Bulk viscosity gradient (explicit): 
+    // Bulk viscosity gradient (explicit)
   - fvc::grad(zeta*fvc::div(U))
-    // Bulk viscosity Laplacian (implicit part):
+    // Bulk viscosity Laplacian (implicit part)
   - fvm::laplacian(zeta, U)
-    // Bulk viscosity Laplacian (explicit correction): 
+    // Bulk viscosity Laplacian (explicit correction)
   + fvc::laplacian(zeta, U)
-    // Darcy resistance: 
+    // Darcy resistance
   + fvm::Sp(dragTerm, U)
   ==
     // User-defined source terms (fvOptions)
@@ -43,12 +40,10 @@ if (pimple.momentumPredictor())
       ==
         fvc::reconstruct
         (
-            (
-              // Capillary pressure surface normal gradient: 
-              - dpcdSwf*fvc::snGrad(Sw)
-            ) * mesh.magSf()  // Convert to flux [kg/s]
-            
-            // Gravitational flux: 
+            // Capillary pressure surface normal gradient
+            dpcdSwf*fvc::snGrad(Sw)*mesh.magSf()
+
+            // Gravitational flux
           + fvc::interpolate(rho)*(g & mesh.Sf())
         )
     );

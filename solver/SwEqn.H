@@ -8,20 +8,14 @@ volScalarField rAU(1.0/UEqn.A());
 surfaceScalarField rAUf("rAUf", fvc::interpolate(rAU));
 
 // Density-weighted inverse diagonal coefficient at faces
-surfaceScalarField rhorAUf("rhorAUf", fvc::interpolate(rho*rAU)); 
-
-// Capillary pressure gradient magnitude (scaled by characteristic length)
-volScalarField pcGradSw
-(
-    "pcGradSw", 
-    mag(dpcdSw*fvc::grad(Sw))*(L/nCells)
-); 
+volScalarField rhoRAU("rhoRAU", rho*rAU);
+surfaceScalarField rhorAUf("rhorAUf", fvc::interpolate(rhoRAU));
 
 // H/A term with capillary pressure constraint for momentum equation
 volVectorField HbyA
 (
     "HbyA", 
-    constrainHbyA(rAU*UEqn.H(), U, pcGradSw)
+    constrainHbyA(rAU*UEqn.H(), U, pc)
 );
 
 // Gravitational flux contribution
@@ -30,16 +24,6 @@ surfaceScalarField phig
     "phig", 
     rhorAUf*fvc::interpolate(rho)*(g & mesh.Sf())
 ); 
-
-// Capillary diffusion coefficient 
-volScalarField diffGradSw
-(
-    "diffGradSw", 
-    -rho*rAU*dpcdSw*Sw
-); 
-
-Info << "Capillary diffusion coefficient: Min = " << gMin(diffGradSw) 
-     << ", Max = " << gMax(diffGradSw) << " [kg/(m·s)]" << endl;
 
 // Calculate uncorrected mass flux using Rhie-Chow interpolation
 // This prevents pressure-velocity decoupling on collocated grids
@@ -58,6 +42,20 @@ surfaceScalarField phiHbyA
     )
 );
 
+// Capillary diffusion coefficient 
+volScalarField diffGradSw
+(
+    "diffGradSw", 
+    rho * rAU * dpcdSw * Sw
+);
+
+volScalarField Pe
+(
+    "Pe",
+    (mag(U) * L/mesh.nCells()) / diffGradSw
+); 
+
+Info<< "Min. Peclet number = " << gMin(Pe) << " Max. Peclet number = " << gMax(Pe) << endl;
 // Make flux relative to moving reference frame if present
 MRF.makeRelative(fvc::interpolate(rho), phiHbyA);
 
@@ -85,7 +83,7 @@ fvScalarMatrix SwEqn
   + fvc::div(phiHbyA, Sw)
   
     // Capillary diffusion term: 
-  - fvm::laplacian(diffGradSw, Sw) 
+  + fvm::laplacian(diffGradSw, Sw) 
   
     // Source terms (if any)
   ==
@@ -106,14 +104,14 @@ while (pimple.correctNonOrthogonal())
         
         // Update conservative mass flux with saturation equation correction
         // This ensures mass conservation and pressure-velocity coupling
-        phi = phiHbyA + SwEqn.flux();  
+        phi = phiHbyA + SwEqn.flux()/fvc::interpolate(Sw);  
         
         // Explicitly relax saturation field for stability
         Sw.relax();
         
         // Correct velocity with pressure gradient from saturation equation
         // This couples capillary effects into the momentum balance
-        U = HbyA + rAU*fvc::reconstruct((phig + SwEqn.flux())/rhorAUf);
+        U = HbyA + rAU*fvc::reconstruct((phig + SwEqn.flux()/fvc::interpolate(Sw))/rhorAUf);
         
         // Ensure velocity boundary conditions are satisfied
         U.correctBoundaryConditions();
@@ -135,10 +133,14 @@ scalar innerResidual =
         fvc::domainIntegrate(mag(Sw - SwPrev)) /
         fvc::domainIntegrate(SwPrev) 
     ).value();
-
-Info<< "Inner loop saturation residual = " << innerResidual << endl;
-
+    
 // Store current saturation for next iteration
 SwPrev = Sw;
+
+Info<< "Inner loop saturation residual = " << innerResidual << endl;
+if (innerResidual <= 1.0e-6)
+{
+    Info<< "****************   CONVERGED correction loop   ********************** " << endl;
+}
 
 // ************************************************************************* //

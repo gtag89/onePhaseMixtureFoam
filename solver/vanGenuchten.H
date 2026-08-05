@@ -74,7 +74,7 @@ public:
     // Compute relative permeability from effective saturation  
     volScalarField computeKr(const volScalarField& Se) const
     {
-        return pow(Se, 0.5) * pow(1 - pow(1 - pow(Se, 1.0/m_), m_), 2);
+        return pow(Se, l_) * pow(1 - pow(1 - pow(Se, 1.0/m_), m_), 2);
     }
 };
 
