@@ -41,7 +41,7 @@ Tutorials
 ---------
 * **1D_overshoot**: Demonstrates saturation overshoot formation during vertical infiltration, reproducing DiCarlo (2004) experiments
 
-![Fig_09](https://github.com/user-attachments/assets/4a18bde5-3c2f-42ca-b6df-88d8093c9f04)
+![Fig_09](docs/1D_DiCarlo.001.jpeg)
 
 * **2D_fingers**: Shows gravity fingering instabilities in heterogeneous porous media with randomly initialized permeability field
 
