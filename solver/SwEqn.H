@@ -104,14 +104,14 @@ while (pimple.correctNonOrthogonal())
         
         // Update conservative mass flux with saturation equation correction
         // This ensures mass conservation and pressure-velocity coupling
-        phi = phiHbyA + SwEqn.flux()/fvc::interpolate(Sw);  
+        phi = phiHbyA + SwEqn.flux();  
         
         // Explicitly relax saturation field for stability
         Sw.relax();
         
         // Correct velocity with pressure gradient from saturation equation
         // This couples capillary effects into the momentum balance
-        U = HbyA + rAU*fvc::reconstruct((phig + SwEqn.flux()/fvc::interpolate(Sw))/rhorAUf);
+        U = HbyA + rAU*fvc::reconstruct((phig + SwEqn.flux())/rhorAUf);
         
         // Ensure velocity boundary conditions are satisfied
         U.correctBoundaryConditions();
